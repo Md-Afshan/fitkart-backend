@@ -1,13 +1,16 @@
 package com.fitkart.service.impl;
 
+import com.fitkart.exception.ResourceNotFoundException;
 import com.fitkart.dto.product.ProductRequest;
 import com.fitkart.dto.product.ProductResponse;
 import com.fitkart.entity.Category;
 import com.fitkart.entity.Product;
+import com.fitkart.entity.ProductStatus;
 import com.fitkart.repository.CategoryRepository;
 import com.fitkart.repository.ProductRepository;
 import com.fitkart.service.ProductService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -51,10 +54,49 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<ProductResponse> getAllProducts() {
+    public List<ProductResponse> getAllProducts(
+            String search,
+            Long categoryId
+    ) {
 
-        return productRepository.findAll()
-                .stream()
+        List<ProductStatus> visibleStatuses = List.of(
+                ProductStatus.ACTIVE,
+                ProductStatus.OUT_OF_STOCK
+        );
+
+        List<Product> products;
+
+        if (search != null && !search.isBlank() && categoryId != null) {
+
+            products = productRepository
+                    .findByStatusInAndCategory_IdAndNameContainingIgnoreCase(
+                            visibleStatuses,
+                            categoryId,
+                            search
+                    );
+
+        } else if (search != null && !search.isBlank()) {
+
+            products = productRepository
+                    .findByStatusInAndNameContainingIgnoreCase(
+                            visibleStatuses,
+                            search
+                    );
+
+        } else if (categoryId != null) {
+
+            products = productRepository
+                    .findByStatusInAndCategory_Id(
+                            visibleStatuses,
+                            categoryId
+                    );
+
+        } else {
+
+            products = productRepository.findByStatusIn(visibleStatuses);
+        }
+
+        return products.stream()
                 .map(this::mapToResponse)
                 .toList();
     }
@@ -64,10 +106,30 @@ public class ProductServiceImpl implements ProductService {
 
         Product product = productRepository.findById(id)
                 .orElseThrow(() ->
-                        new IllegalArgumentException(
+                        new ResourceNotFoundException(
                                 "Product not found with id: " + id
                         )
                 );
+
+        String role = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getAuthorities()
+                .stream()
+                .findFirst()
+                .map(authority -> authority.getAuthority())
+                .orElse("");
+
+        if ("ROLE_CUSTOMER".equals(role)) {
+
+            if (product.getStatus() == ProductStatus.INACTIVE
+                    || product.getStatus() == ProductStatus.DISCONTINUED) {
+
+                throw new ResourceNotFoundException(
+                        "Product not found with id: " + id
+                );
+            }
+        }
 
         return mapToResponse(product);
     }
@@ -116,9 +178,7 @@ public class ProductServiceImpl implements ProductService {
                         )
                 );
 
-        product.setStatus(
-                com.fitkart.entity.ProductStatus.INACTIVE
-        );
+        product.setStatus(ProductStatus.INACTIVE);
 
         product.setUpdatedAt(LocalDateTime.now());
 
@@ -133,8 +193,8 @@ public class ProductServiceImpl implements ProductService {
         response.setName(product.getName());
         response.setDescription(product.getDescription());
         response.setPrice(product.getPrice());
-        response.setStockQuantity(product.getStockQuantity());
         response.setBrand(product.getBrand());
+        response.setStockQuantity(product.getStockQuantity());
         response.setStatus(product.getStatus());
 
         response.setCategoryId(product.getCategory().getId());

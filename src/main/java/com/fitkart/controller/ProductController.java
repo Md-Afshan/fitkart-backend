@@ -33,10 +33,13 @@ public class ProductController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
-    public ResponseEntity<List<ProductResponse>> getAllProducts() {
+    public ResponseEntity<List<ProductResponse>> getAllProducts(
+            @RequestParam(required = false) String search,
+            @RequestParam(required = false) Long categoryId
+    ) {
 
         return ResponseEntity.ok(
-                productService.getAllProducts()
+                productService.getAllProducts(search, categoryId)
         );
     }
 

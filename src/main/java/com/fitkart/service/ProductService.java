@@ -9,7 +9,7 @@ public interface ProductService {
 
     ProductResponse createProduct(ProductRequest request);
 
-    List<ProductResponse> getAllProducts();
+    List<ProductResponse> getAllProducts(String search, Long categoryId);
 
     ProductResponse getProductById(Long id);
 
