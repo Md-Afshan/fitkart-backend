@@ -1,8 +1,10 @@
 package com.fitkart.service.impl;
 
 import com.fitkart.dto.user.AuthResponse;
+import com.fitkart.dto.user.ChangePasswordRequest;
 import com.fitkart.dto.user.LoginRequest;
 import com.fitkart.dto.user.RegisterRequest;
+import com.fitkart.dto.user.UpdateProfileRequest;
 import com.fitkart.dto.user.UserResponse;
 import com.fitkart.entity.Role;
 import com.fitkart.entity.User;
@@ -92,5 +94,67 @@ public class UserServiceImpl implements UserService {
                 );
 
         return UserMapper.toResponse(user);
+    }
+
+    @Override
+    public UserResponse updateProfile(
+            String email,
+            UpdateProfileRequest request
+    ) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new InvalidCredentialsException(
+                                "Authenticated user not found."
+                        )
+                );
+
+        if (!user.getPhone().equals(request.getPhone())) {
+
+            userRepository.findByPhone(request.getPhone())
+                    .ifPresent(existingUser -> {
+                        if (!existingUser.getId().equals(user.getId())) {
+                            throw new ResourceAlreadyExistsException(
+                                    "Phone number is already registered."
+                            );
+                        }
+                    });
+        }
+
+        user.setFullName(request.getFullName());
+        user.setPhone(request.getPhone());
+
+        User updatedUser = userRepository.save(user);
+
+        return UserMapper.toResponse(updatedUser);
+    }
+
+    @Override
+    public void changePassword(
+            String email,
+            ChangePasswordRequest request
+    ) {
+
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() ->
+                        new InvalidCredentialsException(
+                                "Authenticated user not found."
+                        )
+                );
+
+        if (!passwordEncoder.matches(
+                request.getCurrentPassword(),
+                user.getPassword()
+        )) {
+            throw new InvalidCredentialsException(
+                    "Current password is incorrect."
+            );
+        }
+
+        user.setPassword(
+                passwordEncoder.encode(request.getNewPassword())
+        );
+
+        userRepository.save(user);
     }
 }
