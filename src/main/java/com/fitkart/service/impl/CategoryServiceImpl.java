@@ -1,10 +1,12 @@
 package com.fitkart.service.impl;
 
+import com.fitkart.exception.ResourceNotFoundException;
 import com.fitkart.dto.category.CategoryRequest;
 import com.fitkart.dto.category.CategoryResponse;
 import com.fitkart.entity.Category;
 import com.fitkart.exception.ResourceAlreadyExistsException;
 import com.fitkart.repository.CategoryRepository;
+import com.fitkart.repository.ProductRepository;
 import com.fitkart.service.CategoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,6 +19,7 @@ import java.util.List;
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
+    private final ProductRepository productRepository;
 
     @Override
     public CategoryResponse createCategory(CategoryRequest request) {
@@ -57,7 +60,7 @@ public class CategoryServiceImpl implements CategoryService {
 
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() ->
-                        new IllegalArgumentException(
+                        new ResourceNotFoundException(
                                 "Category not found with id: " + id
                         )
                 );
@@ -84,10 +87,16 @@ public class CategoryServiceImpl implements CategoryService {
 
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() ->
-                        new IllegalArgumentException(
+                        new ResourceNotFoundException(
                                 "Category not found with id: " + id
                         )
                 );
+
+        if (productRepository.existsByCategory_Id(id)) {
+            throw new ResourceAlreadyExistsException(
+                    "Category cannot be deleted because it contains products."
+            );
+        }
 
         categoryRepository.delete(category);
     }

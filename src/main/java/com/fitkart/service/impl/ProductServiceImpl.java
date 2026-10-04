@@ -28,7 +28,7 @@ public class ProductServiceImpl implements ProductService {
 
         Category category = categoryRepository.findById(request.getCategoryId())
                 .orElseThrow(() ->
-                        new IllegalArgumentException(
+                        new ResourceNotFoundException(
                                 "Category not found with id: " + request.getCategoryId()
                         )
                 );
@@ -142,14 +142,14 @@ public class ProductServiceImpl implements ProductService {
 
         Product product = productRepository.findById(id)
                 .orElseThrow(() ->
-                        new IllegalArgumentException(
+                        new ResourceNotFoundException(
                                 "Product not found with id: " + id
                         )
                 );
 
         Category category = categoryRepository.findById(request.getCategoryId())
                 .orElseThrow(() ->
-                        new IllegalArgumentException(
+                        new ResourceNotFoundException(
                                 "Category not found with id: " + request.getCategoryId()
                         )
                 );
@@ -173,7 +173,7 @@ public class ProductServiceImpl implements ProductService {
 
         Product product = productRepository.findById(id)
                 .orElseThrow(() ->
-                        new IllegalArgumentException(
+                        new ResourceNotFoundException(
                                 "Product not found with id: " + id
                         )
                 );
