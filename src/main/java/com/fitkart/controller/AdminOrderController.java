@@ -20,9 +20,11 @@ public class AdminOrderController {
     private final OrderService orderService;
 
     @GetMapping
-    public ResponseEntity<List<OrderResponse>> getAllOrders() {
+    public ResponseEntity<List<OrderResponse>> getAllOrders(
+            @RequestParam(required = false) String search
+    ) {
         return ResponseEntity.ok(
-                orderService.getAllOrders()
+                orderService.getAllOrders(search)
         );
     }
 
@@ -32,10 +34,7 @@ public class AdminOrderController {
             @Valid @RequestBody UpdateOrderStatusRequest request
     ) {
         return ResponseEntity.ok(
-                orderService.updateOrderStatus(
-                        orderId,
-                        request
-                )
+                orderService.updateOrderStatus(orderId, request)
         );
     }
 }

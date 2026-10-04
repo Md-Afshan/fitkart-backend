@@ -14,7 +14,7 @@ public interface OrderService {
 
     OrderResponse getOrderById(Long orderId);
 
-    List<OrderResponse> getAllOrders();
+    List<OrderResponse> getAllOrders(String search);
 
     OrderResponse updateOrderStatus(
             Long orderId,

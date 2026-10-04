@@ -205,10 +205,17 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<OrderResponse> getAllOrders() {
+    public List<OrderResponse> getAllOrders(String search) {
 
-        return orderRepository.findAll()
-                .stream()
+        List<Order> orders;
+
+        if (search == null || search.isBlank()) {
+            orders = orderRepository.findAll();
+        } else {
+            orders = orderRepository.searchOrders(search.trim());
+        }
+
+        return orders.stream()
                 .map(this::mapToOrderResponse)
                 .toList();
     }
