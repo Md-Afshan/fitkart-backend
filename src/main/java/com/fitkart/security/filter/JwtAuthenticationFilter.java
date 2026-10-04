@@ -92,7 +92,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         } catch (Exception exception) {
 
-            // JWT is invalid, expired, or cannot be parsed
+            // Clear invalid authentication
             SecurityContextHolder.clearContext();
         }
 
