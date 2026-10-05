@@ -173,4 +173,31 @@ public class UserServiceImpl implements UserService {
 
         userRepository.save(user);
     }
+    @Override
+    @Transactional(readOnly = true)
+    public java.util.List<UserResponse> getCustomers(String search) {
+
+        if (search == null || search.isBlank()) {
+
+            return userRepository
+                    .findByRoleOrderByCreatedAtDesc(Role.CUSTOMER)
+                    .stream()
+                    .map(UserMapper::toResponse)
+                    .toList();
+        }
+
+        String searchValue = search.trim();
+
+        return userRepository
+                .findByRoleAndFullNameContainingIgnoreCaseOrRoleAndEmailContainingIgnoreCase(
+                        Role.CUSTOMER,
+                        searchValue,
+                        Role.CUSTOMER,
+                        searchValue
+                )
+                .stream()
+                .map(UserMapper::toResponse)
+                .toList();
+    }
 }
+

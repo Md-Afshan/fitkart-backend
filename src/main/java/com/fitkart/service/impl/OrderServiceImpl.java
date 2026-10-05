@@ -210,7 +210,7 @@ public class OrderServiceImpl implements OrderService {
         List<Order> orders;
 
         if (search == null || search.isBlank()) {
-            orders = orderRepository.findAll();
+            orders = orderRepository.findAllByOrderByOrderDateDesc();
         } else {
             orders = orderRepository.searchOrders(search.trim());
         }

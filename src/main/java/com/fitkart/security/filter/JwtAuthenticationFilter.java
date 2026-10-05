@@ -31,33 +31,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
 
-        // Get Authorization header
         String authHeader = request.getHeader("Authorization");
 
-        // No JWT present
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        // Extract JWT token
         String token = authHeader.substring(7);
 
         try {
 
-            // Extract username/email from JWT
             String username = jwtService.extractUsername(token);
 
-            // Continue only if username exists
             if (username != null) {
 
-                // Find user from database
                 User user = userRepository.findByEmail(username)
                         .orElse(null);
 
                 if (user != null) {
 
-                    // Validate JWT
                     boolean tokenValid = jwtService.isTokenValid(
                             token,
                             user.getEmail()
@@ -68,13 +61,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                             .getContext()
                             .getAuthentication() == null) {
 
-                        // Convert user's role into Spring Security authority
                         SimpleGrantedAuthority authority =
                                 new SimpleGrantedAuthority(
                                         "ROLE_" + user.getRole().name()
                                 );
 
-                        // Create authenticated user
                         UsernamePasswordAuthenticationToken authentication =
                                 new UsernamePasswordAuthenticationToken(
                                         user.getEmail(),
@@ -82,7 +73,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                                         List.of(authority)
                                 );
 
-                        // Store authentication in SecurityContext
                         SecurityContextHolder
                                 .getContext()
                                 .setAuthentication(authentication);
@@ -92,11 +82,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         } catch (Exception exception) {
 
-            // Clear invalid authentication
             SecurityContextHolder.clearContext();
         }
 
-        // Continue request
         filterChain.doFilter(request, response);
     }
 }

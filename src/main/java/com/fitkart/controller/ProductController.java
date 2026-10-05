@@ -32,7 +32,6 @@ public class ProductController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
     public ResponseEntity<List<ProductResponse>> getAllProducts(
             @RequestParam(required = false) String search,
             @RequestParam(required = false) Long categoryId
@@ -44,7 +43,6 @@ public class ProductController {
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
     public ResponseEntity<ProductResponse> getProductById(
             @PathVariable Long id
     ) {

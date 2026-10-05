@@ -15,6 +15,8 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     List<Order> findByUserOrderByOrderDateDesc(User user);
 
+    List<Order> findAllByOrderByOrderDateDesc();
+
     @Query("""
             SELECT o
             FROM Order o
@@ -26,3 +28,4 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             """)
     List<Order> searchOrders(@Param("search") String search);
 }
+

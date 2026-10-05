@@ -18,4 +18,6 @@ public interface UserService {
     UserResponse updateProfile(String email, UpdateProfileRequest request);
 
     void changePassword(String email, ChangePasswordRequest request);
+
+    java.util.List<UserResponse> getCustomers(String search);
 }
