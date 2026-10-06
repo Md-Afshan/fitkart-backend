@@ -241,6 +241,45 @@ public class OrderServiceImpl implements OrderService {
                 newStatus
         );
 
+        /*
+         * Restore product stock when an order is cancelled
+         * before shipment.
+         *
+         * PLACED -> CANCELLED
+         * CONFIRMED -> CANCELLED
+         *
+         * The transition validation above ensures that
+         * SHIPPED orders cannot be cancelled.
+         */
+        if (newStatus == OrderStatus.CANCELLED) {
+
+            for (OrderItem orderItem : order.getOrderItems()) {
+
+                Product product = orderItem.getProduct();
+
+                int restoredStock =
+                        product.getStockQuantity()
+                                + orderItem.getQuantity();
+
+                product.setStockQuantity(restoredStock);
+
+                /*
+                 * If the product was OUT_OF_STOCK because the
+                 * cancelled order consumed its remaining stock,
+                 * make it available again.
+                 *
+                 * Do not override INACTIVE or DISCONTINUED.
+                 */
+                if (product.getStatus() == ProductStatus.OUT_OF_STOCK
+                        && restoredStock > 0) {
+
+                    product.setStatus(ProductStatus.ACTIVE);
+                }
+
+                productRepository.save(product);
+            }
+        }
+
         order.setStatus(newStatus);
         order.setUpdatedAt(LocalDateTime.now());
 
@@ -259,7 +298,7 @@ public class OrderServiceImpl implements OrderService {
          *
          * This check comes first so that:
          *
-         * DELIVERED → DELIVERED
+         * DELIVERED -> DELIVERED
          * returns "Order is already in DELIVERED status"
          *
          * instead of the more general final-status message.
@@ -294,8 +333,8 @@ public class OrderServiceImpl implements OrderService {
         }
 
         /*
-         * PLACED → CONFIRMED
-         * PLACED → CANCELLED
+         * PLACED -> CONFIRMED
+         * PLACED -> CANCELLED
          */
         if (currentStatus == OrderStatus.PLACED) {
 
@@ -306,8 +345,8 @@ public class OrderServiceImpl implements OrderService {
         }
 
         /*
-         * CONFIRMED → SHIPPED
-         * CONFIRMED → CANCELLED
+         * CONFIRMED -> SHIPPED
+         * CONFIRMED -> CANCELLED
          */
         if (currentStatus == OrderStatus.CONFIRMED) {
 
@@ -318,7 +357,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         /*
-         * SHIPPED → DELIVERED
+         * SHIPPED -> DELIVERED
          */
         if (currentStatus == OrderStatus.SHIPPED) {
 
