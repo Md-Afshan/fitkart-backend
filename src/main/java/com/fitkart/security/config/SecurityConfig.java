@@ -4,6 +4,7 @@ import com.fitkart.security.filter.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -90,21 +91,27 @@ public class SecurityConfig {
                 )
 
                 .authorizeHttpRequests(auth -> auth
+                        // Public authentication
                         .requestMatchers(
-                                // Public authentication
+                                HttpMethod.POST,
                                 "/api/auth/register",
-                                "/api/auth/login",
+                                "/api/auth/login"
+                        ).permitAll()
 
-                                // Public storefront browsing
+                        // Public storefront browsing (GET only)
+                        .requestMatchers(
+                                HttpMethod.GET,
                                 "/api/categories",
+                                "/api/categories/**",
                                 "/api/products",
                                 "/api/products/**",
                                 "/api/product-images/**",
-
-                                // Public product images
                                 "/uploads/**",
+                                "/api/health"
+                        ).permitAll()
 
-                                // Spring Boot error handling
+                        // Spring Boot error handling
+                        .requestMatchers(
                                 "/error"
                         ).permitAll()
 

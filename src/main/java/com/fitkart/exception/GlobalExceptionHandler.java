@@ -174,4 +174,22 @@ public class GlobalExceptionHandler {
                 HttpStatus.BAD_REQUEST
         );
     }
+
+    // Handles illegal argument exceptions (e.g. upload validation failures)
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalArgument(
+            IllegalArgumentException ex) {
+
+        ErrorResponse error = new ErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.BAD_REQUEST.getReasonPhrase(),
+                ex.getMessage()
+        );
+
+        return new ResponseEntity<>(
+                error,
+                HttpStatus.BAD_REQUEST
+        );
+    }
 }

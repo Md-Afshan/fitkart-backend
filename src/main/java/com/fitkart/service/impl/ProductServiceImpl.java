@@ -111,17 +111,15 @@ public class ProductServiceImpl implements ProductService {
                         )
                 );
 
-        String role = SecurityContextHolder
-                .getContext()
-                .getAuthentication()
-                .getAuthorities()
-                .stream()
-                .findFirst()
-                .map(authority -> authority.getAuthority())
-                .orElse("");
+        org.springframework.security.core.Authentication authentication =
+                SecurityContextHolder.getContext().getAuthentication();
 
-        if ("ROLE_CUSTOMER".equals(role)) {
+        boolean isAdmin = authentication != null
+                && authentication.getAuthorities() != null
+                && authentication.getAuthorities().stream()
+                        .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
 
+        if (!isAdmin) {
             if (product.getStatus() == ProductStatus.INACTIVE
                     || product.getStatus() == ProductStatus.DISCONTINUED) {
 
