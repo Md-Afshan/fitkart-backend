@@ -3,6 +3,7 @@ package com.fitkart.service.impl;
 import com.fitkart.service.FileStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,6 +17,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @Service
+@ConditionalOnProperty(name = "file.storage.type", havingValue = "local", matchIfMissing = true)
 @RequiredArgsConstructor
 public class FileStorageServiceImpl implements FileStorageService {
 
@@ -95,6 +97,25 @@ public class FileStorageServiceImpl implements FileStorageService {
                     "Failed to store product image.",
                     exception
             );
+        }
+    }
+
+    @Override
+    public void deleteProductImage(String imagePathOrUrl) {
+        if (imagePathOrUrl == null || imagePathOrUrl.isBlank()) {
+            return;
+        }
+
+        try {
+            String filename = imagePathOrUrl.substring(imagePathOrUrl.lastIndexOf('/') + 1);
+            Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
+            Path filePath = uploadPath.resolve(filename).normalize();
+
+            if (filePath.startsWith(uploadPath)) {
+                Files.deleteIfExists(filePath);
+            }
+        } catch (IOException ignored) {
+            // Non-critical local file cleanup exception
         }
     }
 }

@@ -110,6 +110,8 @@ public class ProductImageServiceImpl implements ProductImageService {
                                 )
                         );
 
+        fileStorageService.deleteProductImage(productImage.getImagePath());
+
         productImageRepository.delete(productImage);
     }
 
