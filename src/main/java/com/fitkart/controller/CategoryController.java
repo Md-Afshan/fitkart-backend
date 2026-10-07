@@ -27,6 +27,15 @@ public class CategoryController {
         );
     }
 
+    @GetMapping("/{id}")
+    public ResponseEntity<CategoryResponse> getCategoryById(
+            @PathVariable Long id) {
+
+        return ResponseEntity.ok(
+                categoryService.getCategoryById(id)
+        );
+    }
+
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CategoryResponse> createCategory(
