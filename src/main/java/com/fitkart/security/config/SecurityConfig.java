@@ -2,6 +2,7 @@ package com.fitkart.security.config;
 
 import com.fitkart.security.filter.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -18,8 +19,6 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
-
-import org.springframework.beans.factory.annotation.Value;
 
 @Configuration
 @EnableMethodSecurity
@@ -96,6 +95,12 @@ public class SecurityConfig {
                                 HttpMethod.POST,
                                 "/api/auth/register",
                                 "/api/auth/login"
+                        ).permitAll()
+
+                        // Allow UptimeRobot health checks using HEAD
+                        .requestMatchers(
+                                HttpMethod.HEAD,
+                                "/api/health"
                         ).permitAll()
 
                         // Public storefront browsing (GET only)
